@@ -80,6 +80,26 @@
       cursor: pointer;
       background-color: darkgrey;
     }
+
+    #payor-selection-legend-container {
+      display: flex;
+      flex-direction: column;
+      /* gap: 0.5rem; */
+    }
+
+    .payor-selected-legend-container {
+      display: flex;
+      flex-direction: row;
+      gap: 1rem;
+    }
+
+    .payor-selected-legend {
+      width: 1rem;
+      height: 1rem;
+
+      border: 1px solid black;
+    }
+
     </style>
   </head>
   <body>
@@ -96,6 +116,22 @@
         >
       </label>
       <button id="add-payor-btn" type="submit">Add Payor</button>
+
+      <!-- Selection Legends -->
+      <div id="payor-selection-legend-container">
+        <div class="payor-selected-legend-container">
+          <div class="payor-selected-legend selected">
+          </div>
+          Selected
+        </div>
+        <div class="payor-selected-legend-container">
+          <div class="payor-selected-legend unselected">
+          </div>
+          Unselected
+        </div>
+      </div>
+      <!-- Selection Legends -->
+
     </article>
     <article id="grocery-input-container">
       <label for="grocery-name">

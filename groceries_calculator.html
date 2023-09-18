@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Groceries Calculator</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+    }
+
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+
+      max-width: 100%;
+
+      white-space: normal;
+      overflow: auto;
+    }
+
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }   
+
+    #payor-input-field {
+      margin: 1rem;
+    }
+
+    #grocery-input-container {
+      margin: 1rem;
+    }
+
+    #payor-selection-container {
+      display: flex;
+      flex-direction: row;
+      gap: 1rem;
+
+      margin: 1rem;
+    }
+
+    #totals-display-container {
+      display: flex;
+      flex-direction: row;
+      spacing: 1rem;
+    }
+
+    #payors-totals-display-container {
+      width: 50%;
+    }
+
+    #items-totals-display-container {
+      width: 50%;
+    }
+
+    .payor {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+    }
+    .payer:hover {
+      cursor: ;
+    }
+
+    .selected {
+      background-color: lightblue;
+    }
+
+    .selected:hover {
+      cursor: pointer;
+      background-color: #0370aa;
+    }
+
+    .unselected {
+      background-color: grey;
+    }
+
+    .unselected:hover {
+      cursor: pointer;
+      background-color: darkgrey;
+    }
+    </style>
+  </head>
+  <body>
+    <h1>Groceries Calculator</h1>
+    <article id="payor-input-field">
+      <label for="payor-name">
+        Payor Name:
+        <input 
+          id="payor-name-input"
+          type="text" 
+          name="payor-name" 
+          placeholder="Payor Name"
+          value=""
+        >
+      </label>
+      <button id="add-payor-btn" type="submit">Add Payor</button>
+    </article>
+    <article id="grocery-input-container">
+      <label for="grocery-name">
+        Grocery Name:
+        <input 
+          id="grocery-name-input"
+          type="text" 
+          name="grocery-name" 
+          placeholder="Name of grocery"
+        >
+      </label>
+      <label for="grocery-price">
+        Amount:
+        <input 
+          id="grocery-price-input"
+          type="number" 
+          name="grocery-price" 
+          value="0" 
+          placeholder="0"
+        >
+      </label>
+      <button id="add-grocery-btn" type="submit"> Add Item </button>
+    </article>
+    <article id="payor-selection-container">
+      <!-- Insert buttons to select payors (on by default) -->
+    </article>
+    <main id="totals-display-container">
+      <article id="payors-totals-display-container">
+      </article>
+      <article id="items-totals-display-container">
+      </article>
+    </main>
+  </body>
+  <script>
+  ////////////////////// START GLOBAL VARIABLES /////////////////////
+
+  // let PAYOR = {
+  //   name: "john",
+  //   items: [
+  //     {
+  //       name: "milk",
+  //       price: 3.99,
+  //     },
+  //   ],
+  //   isSelected: true,
+  //   node: HTML_NODE
+  // }
+
+  const PAYORS = { };
+  const GROCERY_ITEMS = [];
+
+  ////////////////////// END GLOBAL VARIABLES ///////////////////////
+
+  ////////////////////// START HTML ELEMENTS ///////////////////////
+
+  const PAYOR_SELECTION_CONTAINER = document.getElementById("payor-selection-container");
+
+  const TOTALS_DISPLAY_CONTAINER = document.getElementById("totals-display-container");
+  const PAYORS_TOTALS_DISPLAY_CONTAINER = document.getElementById("payors-totals-display-container");
+  const ITEMS_TOTAL_DISPLAY_CONTAINER = document.getElementById("items-totals-display-container");
+
+  const PAYOR_NAME_INPUT = document.getElementById("payor-name-input");
+  const GROCERY_NAME_INPUT = document.getElementById("grocery-name-input");
+  const GROCERY_PRICE_INPUT = document.getElementById("grocery-price-input");
+
+  const ADD_PAYOR_BUTTON = document.getElementById("add-payor-btn");
+
+  ADD_PAYOR_BUTTON.addEventListener("click", handleAddPayor);
+
+  const ADD_GROCERY_BUTTON = document.getElementById("add-grocery-btn");
+
+  ADD_GROCERY_BUTTON.addEventListener("click", handleAddGroceryItem);
+
+  ////////////////////// END HTML ELEMENTS /////////////////////////
+
+  ////////////////////// START EVENT HANDLERS ///////////////////////
+  function handlePayorSelectionClicked(e) {
+    let [payorName,] = e.target.id.split("-");
+    let payor = PAYORS[payorName];
+
+    payor.isSelected = !payor.isSelected;
+
+    payor.node.className = "payor ";
+    if (payor.isSelected) {
+      payor.node.className += "selected ";
+    } else {
+      payor.node.className += "unselected ";
+    }
+  }
+
+  function handleAddGroceryItem() {
+    if (Object.keys(PAYORS).length === 0) {
+      console.log("There are no payors");
+      alert("There are no payors");
+      return;
+    }
+
+    let item = getNewGroceryItem(); 
+
+    console.log(item);
+
+    addNewGroceryItem(item);
+    resetGroceryInputs();
+
+    renderTotals();
+    renderGroceryItems();
+  }
+
+  function handleAddPayor() {
+    let newPayor = addPayor();
+    resetPayorInputs();
+
+    renderPayorSelections();
+  }
+
+  ////////////////////// END EVENT HANDLERS /////////////////////////
+
+
+  ////////////////////// START FUNCTIONS ///////////////////////
+
+  // Reads inputs and returns grocery item
+  function getNewGroceryItem() {
+    let name = GROCERY_NAME_INPUT.value;
+    let price = parseFloat(GROCERY_PRICE_INPUT.value);
+
+    if (price === NaN) {
+      alert("Item price must be a valid number");
+      throw new Error("Item price must be a valid number");
+    }
+
+    return { name, price };
+  }
+
+  // Resets grocery input fields
+  function resetGroceryInputs() {
+    GROCERY_PRICE_INPUT.value = 0;
+    GROCERY_NAME_INPUT.value = "";
+  }
+
+  // Adds new item to the all appropriate payors
+  function addNewGroceryItem(item) {
+    if (!item) {
+      alert("Item must not be null or undefined");
+      throw new Error("Item must not be null or undefined");
+    }
+    if (!item.name) {
+      alert("Item name must not be empty");
+      throw new Error("Item name must not be empty");
+    }
+    if (GROCERY_ITEMS[item.name]) {
+      alert(`Item with name "${item.name}" alrady exists`);
+      throw new Error(`Item with name "${item.name}" alrady exists`);
+    }
+    if (!item.price) {
+      alert("Item price must not be $0");
+      throw new Error("Item price must not be $0");
+    }
+
+    let selectedPayors = [];
+
+    for (let payorName in PAYORS) {
+      let payor = PAYORS[payorName];
+
+      if (payor.isSelected) {
+        selectedPayors.push(payor);
+      }
+    }
+
+    for (let payor of selectedPayors) {
+      payor.items.push({
+        name: item.name,
+        price: item.price / selectedPayors.length,
+      })
+    }
+
+    GROCERY_ITEMS.push(item);
+  }
+
+  // Returns a new payor
+  function getNewPayor() {
+    return {
+      name: PAYOR_NAME_INPUT.value,
+      items: [],
+      isSelected: true,
+    };
+  }
+
+  function resetPayorInputs() {
+    PAYOR_NAME_INPUT.value = "";
+  }
+
+  function addPayor() {
+    let newPayor = getNewPayor();
+
+    console.log("Adding new payor:", newPayor);
+
+    if (newPayor.name === "" ) {
+      console.error("Payor name cannot be empty");
+      alert("Payor name cannot be empty");
+      return;
+    }
+    
+    if (PAYORS[newPayor.name]) {
+      console.error(`Payor with name "${newPayor.name}" already exists.`);
+      alert(`Payor with name "${newPayor.name}" already exists.`);
+      return;
+    }
+
+    PAYORS[newPayor.name] = newPayor;
+  }
+
+  function renderPayorSelections() {
+    // Remove all children
+    while (PAYOR_SELECTION_CONTAINER.firstChild) {
+      PAYOR_SELECTION_CONTAINER.removeChild(PAYOR_SELECTION_CONTAINER.lastChild);
+    }
+
+    for (let payorName in PAYORS) {
+      let payor = PAYORS[payorName];
+
+      let payorNode = document.createElement("div");
+      payor.node = payorNode;
+
+      payorNode.textContent = payor.name;
+      payorNode.className = "payor ";
+      payorNode.id = payor.name + "-select-btn";
+
+      if (payor.isSelected) {
+        payorNode.className += "selected ";
+      } else {
+        payorNode.className += "unselected ";
+      }
+
+      payorNode.addEventListener("click", handlePayorSelectionClicked);
+
+      PAYOR_SELECTION_CONTAINER.appendChild(payorNode);
+    }
+  }
+
+  function renderTotals() {
+    while (PAYORS_TOTALS_DISPLAY_CONTAINER.firstChild) {
+      PAYORS_TOTALS_DISPLAY_CONTAINER.removeChild(PAYORS_TOTALS_DISPLAY_CONTAINER.lastChild);
+    }
+
+    for (let payorName in PAYORS) {
+      let payor = PAYORS[payorName];
+
+      let table = document.createElement("table");
+      table.id = payorName + "-totals";
+      PAYORS_TOTALS_DISPLAY_CONTAINER.appendChild(table);
+
+      let h3 = document.createElement("h3");
+      h3.textContent = payorName;
+      table.appendChild(h3);
+
+      let headerRow = document.createElement("tr");
+      table.appendChild(headerRow);
+
+      let nameHeader = document.createElement("th");
+      nameHeader.textContent = "Item Name";
+      let priceHeader = document.createElement("th");
+      priceHeader.textContent = "Price";
+      headerRow.appendChild(nameHeader);
+      headerRow.appendChild(priceHeader);
+
+      let runningSum = 0;
+
+      for (let item of payor.items) {
+        let itemRow = document.createElement("tr");
+
+        let itemName = document.createElement("td");
+        itemName.textContent = item.name;
+        itemRow.appendChild(itemName);
+        let itemPrice = document.createElement("td");
+        itemPrice.textContent = `\$${item.price.toFixed(3)}`;
+        itemRow.appendChild(itemPrice);
+
+        table.appendChild(itemRow);
+
+        runningSum += item.price;
+      }
+
+      let totalsRow = document.createElement("tr");
+
+      let totalsName = document.createElement("td");
+      totalsName.textContent = "Payor Total";
+      totalsRow.appendChild(totalsName);
+      let totalPrice = document.createElement("td");
+      totalPrice.textContent = `\$${runningSum.toFixed(3)}`;
+      totalsRow.appendChild(totalPrice);
+
+      table.appendChild(totalsRow);
+
+      // <table>
+      //   <tr>
+      //     <th>Item Name</th>
+      //     <th>Price</th>
+      //   </tr>
+      //   <tr>
+      //     <td>Alfreds Futterki</td>
+      //     <td>Maria Anders</td>
+      //   </tr>
+      //   <tr>
+      //     <td>Centro comercial Moctezuma</td>
+      //     <td>Francisco Chang</td>
+      //   </tr>
+      // </table> 
+      
+    }
+  }
+
+  function renderGroceryItems() {
+    let groceryTable = document.createElement("table");
+
+    let groceryTableTitle = document.createElement("h3");
+    groceryTableTitle.textContent = "All Grocery Items";
+    groceryTable.appendChild(groceryTableTitle);
+
+    let headerRow = document.createElement("tr");
+    groceryTable.appendChild(headerRow);
+
+    let nameHeader = document.createElement("th");
+    nameHeader.textContent = "Item Name";
+    let priceHeader = document.createElement("th");
+    priceHeader.textContent = "Price";
+    headerRow.appendChild(nameHeader);
+    headerRow.appendChild(priceHeader);
+
+    let runningSum = 0;
+
+    for (let item of GROCERY_ITEMS) {
+      let itemRow = document.createElement("tr");
+
+      let itemName = document.createElement("td");
+      itemName.textContent = item.name;
+      itemRow.appendChild(itemName);
+      let itemPrice = document.createElement("td");
+      itemPrice.textContent = `\$${item.price.toFixed(3)}`;
+      itemRow.appendChild(itemPrice);
+
+      groceryTable.appendChild(itemRow);
+
+      runningSum += item.price;
+    }
+
+    let totalsRow = document.createElement("tr");
+
+    let totalsName = document.createElement("td");
+    totalsName.textContent = "Grand Total";
+    totalsRow.appendChild(totalsName);
+    let totalPrice = document.createElement("td");
+    totalPrice.textContent = `\$${runningSum.toFixed(3)}`;
+    totalsRow.appendChild(totalPrice);
+
+    groceryTable.appendChild(totalsRow);
+
+    ITEMS_TOTAL_DISPLAY_CONTAINER.removeChild(ITEMS_TOTAL_DISPLAY_CONTAINER.lastChild);
+    ITEMS_TOTAL_DISPLAY_CONTAINER.appendChild(groceryTable);
+  }
+
+  ////////////////////// END FUNCTIONS /////////////////////////
+
+  </script>
+</html>

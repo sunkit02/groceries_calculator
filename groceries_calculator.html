@@ -194,8 +194,15 @@
   const ITEMS_TOTAL_DISPLAY_CONTAINER = document.getElementById("items-totals-display-container");
 
   const PAYOR_NAME_INPUT = document.getElementById("payor-name-input");
+  
+  PAYOR_NAME_INPUT.addEventListener("keyup", handleEnterNewPayorName);
+
+
   const GROCERY_NAME_INPUT = document.getElementById("grocery-name-input");
+  GROCERY_NAME_INPUT.addEventListener("keyup", handleEnterGroceryName);
+
   const GROCERY_PRICE_INPUT = document.getElementById("grocery-price-input");
+  GROCERY_PRICE_INPUT.addEventListener("keyup", handleEnterGroceryPrice);
 
   const ADD_PAYOR_BUTTON = document.getElementById("add-payor-btn");
 
@@ -208,6 +215,26 @@
   ////////////////////// END HTML ELEMENTS /////////////////////////
 
   ////////////////////// START EVENT HANDLERS ///////////////////////
+
+  function handleEnterGroceryName(e) {
+    if (e.key === "Enter") {
+      console.log("meeep")
+      GROCERY_PRICE_INPUT.focus();
+    }
+  }
+
+  function handleEnterGroceryPrice(e) {
+    if (e.key === "Enter") {
+      handleAddGroceryItem();
+    }
+  }
+
+  function handleEnterNewPayorName(e) {
+    if (e.key === "Enter") {
+      handleAddPayor();
+    }
+  }
+
   function handlePayorSelectionClicked(e) {
     let [payorName,] = e.target.id.split("-");
     let payor = PAYORS[payorName];
@@ -238,6 +265,8 @@
 
     renderTotals();
     renderGroceryItems();
+
+    GROCERY_NAME_INPUT.focus();
   }
 
   function handleAddPayor() {
@@ -245,6 +274,8 @@
     resetPayorInputs();
 
     renderPayorSelections();
+
+    PAYOR_NAME_INPUT.focus();
   }
 
   ////////////////////// END EVENT HANDLERS /////////////////////////
